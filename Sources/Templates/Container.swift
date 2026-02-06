@@ -85,7 +85,7 @@ public extension Templates {
             X──────────────X──────────────X
                          bottom
      */
-    enum ArrowSide {
+    enum ArrowSide: Sendable {
         case top(ArrowAlignment)
         case right(ArrowAlignment)
         case bottom(ArrowAlignment)
@@ -99,7 +99,7 @@ public extension Templates {
             |                                                     |
                         * diagram is for `ArrowSide.top`
          */
-        public enum ArrowAlignment {
+        public enum ArrowAlignment: Sendable {
             case mostCounterClockwise
             case centered
             case mostClockwise
