@@ -67,12 +67,12 @@ struct PopoverReaderViewBackground: View {
             Circle()
                 .fill(Color.blue, strokeBorder: Color.white, lineWidth: 3)
                 .frame(width: 16, height: 16)
-                .position(context.frame.point(at: .top))
+                .position(context.frame.point(at: .top, isRightToLeft: context.isRightToLeft))
                 .zIndex(1)
 
             Templates.CurveConnector(
-                start: context.frame.point(at: .top),
-                end: context.window.frameTagged("Frame-Tagged View").point(at: .bottom)
+                start: context.frame.point(at: .top, isRightToLeft: context.isRightToLeft),
+                end: context.window.frameTagged("Frame-Tagged View").point(at: .bottom, isRightToLeft: context.isRightToLeft)
             )
             .stroke(
                 Color.blue,
@@ -88,7 +88,7 @@ struct PopoverReaderViewBackground: View {
                 .fill(Color.blue, strokeBorder: Color.white, lineWidth: 3)
                 .frame(width: 16, height: 16)
                 .position(
-                    context.window.frameTagged("Frame-Tagged View").point(at: .bottom)
+                    context.window.frameTagged("Frame-Tagged View").point(at: .bottom, isRightToLeft: context.isRightToLeft)
                 )
                 .zIndex(1)
         }

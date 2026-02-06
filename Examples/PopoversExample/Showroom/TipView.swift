@@ -41,8 +41,8 @@ struct TipView: View {
             PopoverReader { context in
 
                 Templates.CurveConnector(
-                    start: context.frame.point(at: .bottom),
-                    end: context.window.frameTagged("TipView").point(at: .top)
+                    start: context.frame.point(at: .bottom, isRightToLeft: context.isRightToLeft),
+                    end: context.window.frameTagged("TipView").point(at: .top, isRightToLeft: context.isRightToLeft)
                 )
                 .stroke(
                     Color(UIColor(hex: 0xFFAD46)),
@@ -57,7 +57,7 @@ struct TipView: View {
                     .fill(Color(UIColor(hex: 0xFFAD46)))
                     .frame(width: 16, height: 16)
                     .position(
-                        context.window.frameTagged("TipView").point(at: .top)
+                        context.window.frameTagged("TipView").point(at: .top, isRightToLeft: context.isRightToLeft)
                     )
             }
         }
