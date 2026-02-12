@@ -28,21 +28,28 @@ public extension Popover {
                 originAnchor: originAnchor,
                 popoverAnchor: popoverAnchor,
                 originFrame: attributes.sourceFrame().inset(by: attributes.sourceFrameInset),
-                popoverSize: size ?? .zero
+                popoverSize: size ?? .zero,
+                isRightToLeft: context.isRightToLeft
             )
 
             let screenEdgePadding = attributes.screenEdgePadding
 
+            let leadingPadding = context.isRightToLeft ? screenEdgePadding.right : screenEdgePadding.left
+            let trailingPadding = context.isRightToLeft ? screenEdgePadding.left : screenEdgePadding.right
+
             let safeWindowFrame = window.safeAreaLayoutGuide.layoutFrame
-            let maxX = safeWindowFrame.maxX - screenEdgePadding.right
+
+            let minX = safeWindowFrame.minX + leadingPadding
+            let maxX = safeWindowFrame.maxX - trailingPadding
+            let minY = safeWindowFrame.minY + screenEdgePadding.top
             let maxY = safeWindowFrame.maxY - screenEdgePadding.bottom
 
             /// Popover overflows on left/top side.
-            if popoverFrame.origin.x < screenEdgePadding.left {
-                popoverFrame.origin.x = screenEdgePadding.left
+            if popoverFrame.origin.x < minX {
+                popoverFrame.origin.x = minX
             }
-            if popoverFrame.origin.y < screenEdgePadding.top {
-                popoverFrame.origin.y = screenEdgePadding.top
+            if popoverFrame.origin.y < minY {
+                popoverFrame.origin.y = minY
             }
 
             /// Popover overflows on the right/bottom side.
@@ -66,7 +73,8 @@ public extension Popover {
             let popoverFrame = attributes.position.relativeFrame(
                 selectedAnchor: context.selectedAnchor ?? popoverAnchors.first ?? .bottom,
                 containerFrame: attributes.sourceFrame().inset(by: attributes.sourceFrameInset),
-                popoverSize: size ?? .zero
+                popoverSize: size ?? .zero,
+                isRightToLeft: context.isRightToLeft
             )
 
             return popoverFrame
@@ -118,12 +126,14 @@ public extension Popover {
                 popoverAnchors: popoverAnchors,
                 containerFrame: frame,
                 popoverSize: size,
-                targetPoint: point
+                targetPoint: point,
+                isRightToLeft: context.isRightToLeft
             )
             let popoverFrame = attributes.position.relativeFrame(
                 selectedAnchor: closestAnchor,
                 containerFrame: frame,
-                popoverSize: size
+                popoverSize: size,
+                isRightToLeft: context.isRightToLeft
             )
 
             context.selectedAnchor = closestAnchor

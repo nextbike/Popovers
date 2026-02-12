@@ -103,10 +103,24 @@ public extension UIColor {
 /// Position a view using a rectangular frame. Access using `.frame(rect:)`.
 struct FrameRectModifier: ViewModifier {
     let rect: CGRect
+
+    @Environment(\.layoutDirection)
+    private var layoutDirection
+
     func body(content: Content) -> some View {
-        content
-            .frame(width: rect.width, height: rect.height, alignment: .topLeading)
-            .position(x: rect.origin.x + rect.width / 2, y: rect.origin.y + rect.height / 2)
+        GeometryReader { geometry in
+            let centerX: CGFloat = {
+                if layoutDirection == .rightToLeft {
+                    return geometry.size.width - (rect.origin.x + rect.width / 2)
+                } else {
+                    return rect.origin.x + rect.width / 2
+                }
+            }()
+
+            content
+                .frame(width: rect.width, height: rect.height, alignment: .topLeading)
+                .position(x: centerX, y: rect.origin.y + rect.height / 2)
+        }
     }
 }
 

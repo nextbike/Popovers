@@ -172,7 +172,7 @@ public extension Templates {
         /**
          Horizontal or Vertical line.
          */
-        public enum Direction {
+        public enum Direction: Sendable {
             case horizontal
             case vertical
         }

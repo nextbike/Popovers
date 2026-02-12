@@ -24,53 +24,33 @@ public extension CGRect {
                 |                             |
                 X──────────────X──────────────X
          bottomLeft          bottom         bottomRight
-
+     - parameter at: The positional anchor of the popover.
+     - parameter isRightToLeft: Indicates if the device's orientation is inverted.
      */
-    func point(at anchor: Popover.Attributes.Position.Anchor) -> CGPoint {
+    func point(at anchor: Popover.Attributes.Position.Anchor, isRightToLeft: Bool) -> CGPoint {
+        let leadingX = isRightToLeft ? origin.x + width : origin.x
+        let trailingX = isRightToLeft ? origin.x : origin.x + width
+
         switch anchor {
-        case .topLeft:
-            return origin
-        case .top:
-            return CGPoint(
-                x: origin.x + width / 2,
-                y: origin.y
-            )
-        case .topRight:
-            return CGPoint(
-                x: origin.x + width,
-                y: origin.y
-            )
-        case .right:
-            return CGPoint(
-                x: origin.x + width,
-                y: origin.y + height / 2
-            )
-        case .bottomRight:
-            return CGPoint(
-                x: origin.x + width,
-                y: origin.y + height
-            )
-        case .bottom:
-            return CGPoint(
-                x: origin.x + width / 2,
-                y: origin.y + height
-            )
-        case .bottomLeft:
-            return CGPoint(
-                x: origin.x,
-                y: origin.y + height
-            )
-        case .left:
-            return CGPoint(
-                x: origin.x,
-                y: origin.y + height / 2
-            )
-        case .center:
-            return CGPoint(
-                x: origin.x + width / 2,
-                y: origin.y + height / 2
-            )
-        }
+            case .topLeft:
+                return CGPoint(x: leadingX, y: origin.y)
+            case .top:
+                return CGPoint(x: origin.x + width / 2, y: origin.y)
+            case .topRight:
+                return CGPoint(x: trailingX, y: origin.y)
+            case .right:
+                return CGPoint(x: trailingX, y: origin.y + height / 2)
+            case .bottomRight:
+                return CGPoint(x: trailingX, y: origin.y + height)
+            case .bottom:
+                return CGPoint(x: origin.x + width / 2, y: origin.y + height)
+            case .bottomLeft:
+                return CGPoint(x: leadingX, y: origin.y + height)
+            case .left:
+                return CGPoint(x: leadingX, y: origin.y + height / 2)
+            case .center:
+                return CGPoint(x: origin.x + width / 2, y: origin.y + height / 2)
+            }
     }
 }
 
@@ -81,15 +61,17 @@ public extension Popover.Attributes.Position {
      - parameter popoverAnchor: The anchor of the popover that attaches to `originAnchor`.
      - parameter originFrame: The source frame.
      - parameter popoverSize: The size of the popover.
+     - parameter isRightToLeft: Indicates if the device's orientation is inverted.
      */
     func absoluteFrame(
         originAnchor: Anchor,
         popoverAnchor: Anchor,
         originFrame: CGRect,
-        popoverSize: CGSize
+        popoverSize: CGSize,
+        isRightToLeft: Bool
     ) -> CGRect {
         /// Get the origin point from the origin frame.
-        let popoverOrigin = originFrame.point(at: originAnchor)
+        let popoverOrigin = originFrame.point(at: originAnchor, isRightToLeft: isRightToLeft)
 
         /// Adjust `popoverOrigin` to account for `popoverAnchor.`
         switch popoverAnchor {
@@ -146,16 +128,25 @@ public extension Popover.Attributes.Position {
      - parameter popoverAnchor: The popover's position within the container frame.
      - parameter containerFrame: The reference frame.
      - parameter popoverSize: The size of the popover.
+     - parameter isRightToLeft: Indicates if the device's orientation is inverted.
      */
     func relativeOrigin(
         popoverAnchor: Anchor,
         containerFrame: CGRect,
-        popoverSize: CGSize
+        popoverSize: CGSize,
+        isRightToLeft: Bool,
     ) -> CGPoint {
+        let physicalLeftX = containerFrame.origin.x
+        let physicalRightX = containerFrame.origin.x + containerFrame.width - popoverSize.width
+
+        /// Flip origin points based on layout orientation
+        let leadingX = isRightToLeft ? physicalRightX : physicalLeftX
+        let trailingX = isRightToLeft ? physicalLeftX : physicalRightX
+
         switch popoverAnchor {
         case .topLeft:
             return CGPoint(
-                x: containerFrame.origin.x,
+                x: leadingX,
                 y: containerFrame.origin.y
             )
         case .top:
@@ -165,17 +156,17 @@ public extension Popover.Attributes.Position {
             )
         case .topRight:
             return CGPoint(
-                x: containerFrame.origin.x + containerFrame.width - popoverSize.width,
+                x: trailingX,
                 y: containerFrame.origin.y
             )
         case .right:
             return CGPoint(
-                x: containerFrame.origin.x + containerFrame.width - popoverSize.width,
+                x: trailingX,
                 y: containerFrame.origin.y + containerFrame.height / 2 - popoverSize.height / 2
             )
         case .bottomRight:
             return CGPoint(
-                x: containerFrame.origin.x + containerFrame.width - popoverSize.width,
+                x: trailingX,
                 y: containerFrame.origin.y + containerFrame.height - popoverSize.height
             )
         case .bottom:
@@ -185,12 +176,12 @@ public extension Popover.Attributes.Position {
             )
         case .bottomLeft:
             return CGPoint(
-                x: containerFrame.origin.x,
+                x: leadingX,
                 y: containerFrame.origin.y + containerFrame.height - popoverSize.height
             )
         case .left:
             return CGPoint(
-                x: containerFrame.origin.x,
+                x: leadingX,
                 y: containerFrame.origin.y + containerFrame.height / 2 - popoverSize.height / 2
             )
         case .center:
@@ -207,19 +198,22 @@ public extension Popover.Attributes.Position {
      - parameter containerFrame: The reference frame.
      - parameter popoverSize: The size of the popover.
      - parameter targetPoint: The point to check for the closest anchor.
+     - parameter isRightToLeft: Indicates if the device's orientation is inverted.
      */
     func relativeClosestAnchor(
         popoverAnchors: [Anchor],
         containerFrame: CGRect,
         popoverSize: CGSize,
-        targetPoint: CGPoint
+        targetPoint: CGPoint,
+        isRightToLeft: Bool
     ) -> Popover.Attributes.Position.Anchor {
         var (closestAnchor, closestDistance): (Popover.Attributes.Position.Anchor, CGFloat) = (.bottom, .infinity)
         for popoverAnchor in popoverAnchors {
             let origin = relativeOrigin(
                 popoverAnchor: popoverAnchor,
                 containerFrame: containerFrame,
-                popoverSize: popoverSize
+                popoverSize: popoverSize,
+                isRightToLeft: isRightToLeft
             )
 
             /// Comparing distances, so no need to square the distance (saves processing power).
@@ -238,16 +232,19 @@ public extension Popover.Attributes.Position {
      - parameter selectedAnchor: The popover's position within the container frame.
      - parameter containerFrame: The reference frame.
      - parameter popoverSize: The size of the popover.
+     - parameter isRightToLeft: Indicates if the device's orientation is inverted.
      */
     func relativeFrame(
         selectedAnchor: Popover.Attributes.Position.Anchor,
         containerFrame: CGRect,
-        popoverSize: CGSize
+        popoverSize: CGSize,
+        isRightToLeft: Bool
     ) -> CGRect {
         let origin = relativeOrigin(
             popoverAnchor: selectedAnchor,
             containerFrame: containerFrame,
-            popoverSize: popoverSize
+            popoverSize: popoverSize,
+            isRightToLeft: isRightToLeft
         )
 
         let frame = CGRect(origin: origin, size: popoverSize)

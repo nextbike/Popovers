@@ -60,7 +60,11 @@ public extension Popover {
                 return UIWindow()
             }
         }
-        
+
+        public var isRightToLeft: Bool {
+            window.effectiveUserInterfaceLayoutDirection == .rightToLeft
+        }
+
         /**
          The bounds of the window in which the `Popover` is being presented, or the `zero` frame if the popover has not been presented yet.
          */

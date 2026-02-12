@@ -93,8 +93,13 @@ struct PopoverContainerView: View {
                             .onChanged { value in
 
                                 func update() {
+                                    let adjustedTranslation = CGSize(
+                                        width: popover.context.isRightToLeft ? -value.translation.width : value.translation.width,
+                                        height: value.translation.height
+                                    )
+
                                     /// Apply the offset.
-                                    applyDraggingOffset(popover: popover, translation: value.translation)
+                                    applyDraggingOffset(popover: popover, translation: adjustedTranslation)
 
                                     /// Update the visual frame to account for the dragging offset.
                                     popover.context.frame = CGRect(
@@ -119,10 +124,13 @@ struct PopoverContainerView: View {
                                 }
                             }
                             .onEnded { value in
+                                let horizontalTranslation = popover.context.isRightToLeft
+                                    ? -value.predictedEndTranslation.width
+                                    : value.predictedEndTranslation.width
 
                                 /// The expected dragging end point.
                                 let finalOrigin = CGPoint(
-                                    x: popover.context.staticFrame.origin.x + value.predictedEndTranslation.width,
+                                    x: popover.context.staticFrame.origin.x + horizontalTranslation,
                                     y: popover.context.staticFrame.origin.y + value.predictedEndTranslation.height
                                 )
 
@@ -184,14 +192,16 @@ struct PopoverContainerView: View {
 
     /// Get the offset of a popover in order to place it in its correct location.
     func popoverOffset(for popover: Popover) -> CGSize {
-        guard popover.context.size != nil else { return .zero }
+        guard let size = popover.context.size else { return .zero }
         let frame = popover.context.staticFrame
-        let offset = CGSize(
-            width: frame.origin.x + ((selectedPopover == popover) ? selectedPopoverOffset.width : 0),
-            height: frame.origin.y + ((selectedPopover == popover) ? selectedPopoverOffset.height : 0)
-        )
 
-        return offset
+        let adjustedHorizontalOffset: CGFloat = if popover.context.isRightToLeft {
+            popover.context.window.frame.width - frame.origin.x - size.width
+        } else {
+            frame.origin.x
+        }
+
+        return CGSize(width: adjustedHorizontalOffset, height: frame.origin.y)
     }
 
     // MARK: - Dragging
